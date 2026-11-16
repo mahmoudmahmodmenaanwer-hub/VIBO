@@ -1,0 +1,6 @@
+{
+  "name": "VIBO",
+  "description": "تطبيق فيديوهات قصيرة عربي متكامل يدعم RTL، التشغيل التلقائي، التفاعل، الاكتشاف، والملفات الشخصية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

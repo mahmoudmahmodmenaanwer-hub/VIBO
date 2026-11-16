@@ -1,0 +1,124 @@
+<resources>
+    <string name="app_name">VIBO</string>
+
+    <!-- Auth & Onboarding -->
+    <string name="auth_tagline">اصنع لحظتك. شارك إبداعك.</string>
+    <string name="auth_subtitle">منصة الفيديوهات القصيرة العربية — اكتشف، تفاعل، وشارك مقاطعك بكل سلاسة.</string>
+    <string name="auth_google_sign_in">تسجيل الدخول بحساب Google</string>
+    <string name="auth_signing_in">جاري تسجيل الدخول...</string>
+    <string name="auth_error_missing_client_id">تعذر العثور على إعدادات Google Sign-In</string>
+    <string name="auth_error_unexpected_credential">نوع بيانات الاعتماد غير متوقع</string>
+    <string name="auth_error_generic">تعذر تسجيل الدخول، يرجى المحاولة مرة أخرى</string>
+    <string name="auth_feature_autoplay">تشغيل تلقائي فائق السرعة عند التمرير</string>
+    <string name="auth_feature_interact">إعجاب، تعليقات، ومشاركة فورية</string>
+    <string name="auth_feature_create">ارفع مقاطعك من هاتفك بلمسة واحدة</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_feed">الرئيسية</string>
+    <string name="nav_discover">اكتشف</string>
+    <string name="nav_upload">نشر</string>
+    <string name="nav_notifications">الإشعارات</string>
+    <string name="nav_profile">حسابي</string>
+
+    <!-- Feed -->
+    <string name="feed_tab_for_you">لك</string>
+    <string name="feed_tab_following">تتابعهم</string>
+    <string name="feed_empty_title">لا توجد فيديوهات بعد</string>
+    <string name="feed_empty_subtitle">كن أول من يشارك لحظة إبداعية على VIBO!</string>
+    <string name="feed_following_empty_title">قائمة المتابَعين فارغة</string>
+    <string name="feed_following_empty_subtitle">تابع المبدعين في صفحة اكتشف لتظهر فيديوهاتهم هنا.</string>
+    <string name="feed_action_upload">ارفع فيديو الآن</string>
+    <string name="feed_action_discover">استكشف المبدعين</string>
+    <string name="cd_like_video">إعجاب بالفيديو</string>
+    <string name="cd_comment_video">التعليقات</string>
+    <string name="cd_share_video">مشاركة الفيديو</string>
+    <string name="cd_mute_toggle">كتم أو تشغيل الصوت</string>
+    <string name="cd_creator_avatar">صورة المبدع</string>
+    <string name="cd_follow_creator">متابعة المبدع</string>
+    <string name="share_video_subject">شاهد هذا الفيديو على VIBO</string>
+
+    <!-- Comments -->
+    <string name="comments_title">التعليقات</string>
+    <string name="comments_empty">لا توجد تعليقات بعد. كن أول من يعلّق!</string>
+    <string name="comments_hint">أضف تعليقاً لطيفاً...</string>
+    <string name="cd_send_comment">إرسال التعليق</string>
+
+    <!-- Discover -->
+    <string name="discover_title">اكتشف</string>
+    <string name="discover_search_hint">ابحث عن فيديو، هاشتاق، أو مبدع...</string>
+    <string name="discover_creators_section">مبدعون مقترحون</string>
+    <string name="discover_videos_section">فيديوهات رائجة</string>
+    <string name="discover_no_results">لا توجد نتائج مطابقة لبحثك</string>
+    <string name="follow_label">متابعة</string>
+    <string name="following_label">تتابعه</string>
+
+    <!-- Upload -->
+    <string name="upload_title">نشر فيديو جديد</string>
+    <string name="upload_source_phone">من الهاتف</string>
+    <string name="upload_source_url">رابط مباشر</string>
+    <string name="upload_pick_video">اختر فيديو من الهاتف</string>
+    <string name="upload_change_video">تغيير الفيديو</string>
+    <string name="upload_url_hint">أدخل رابط فيديو مباشر (MP4 / HLS)</string>
+    <string name="upload_title_label">عنوان الفيديو</string>
+    <string name="upload_title_hint">اكتب عنواناً جذاباً للمقطع...</string>
+    <string name="upload_desc_label">الوصف</string>
+    <string name="upload_desc_hint">أضف تفاصيل أو قصة الفيديو...</string>
+    <string name="upload_category_label">التصنيف</string>
+    <string name="upload_hashtags_label">الوسوم (مفصولة بمسافة أو فاصلة)</string>
+    <string name="upload_hashtags_hint">مثال: إبداع سفر تقنية</string>
+    <string name="upload_visibility_label">الخصوصية</string>
+    <string name="upload_visibility_public">عام للجميع</string>
+    <string name="upload_visibility_private">خاص (لك فقط)</string>
+    <string name="upload_publish_button">نشر على VIBO</string>
+    <string name="upload_publishing">جاري النشر...</string>
+    <string name="upload_success">تم نشر الفيديو بنجاح!</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">الإشعارات</string>
+    <string name="notifications_mark_all">تحديد الكل كمقروء</string>
+    <string name="notifications_empty_title">لا توجد إشعارات حالياً</string>
+    <string name="notifications_empty_subtitle">ستصلك التنبيهات هنا عند الإعجاب أو التعليق أو المتابعة.</string>
+
+    <!-- Profile -->
+    <string name="profile_videos_tab">الفيديوهات</string>
+    <string name="profile_liked_tab">الإعجابات</string>
+    <string name="profile_stat_videos">فيديو</string>
+    <string name="profile_stat_followers">متابِع</string>
+    <string name="profile_stat_following">يتابع</string>
+    <string name="profile_stat_likes">إعجاب</string>
+    <string name="profile_edit_button">تعديل الملف</string>
+    <string name="profile_sign_out">تسجيل الخروج</string>
+    <string name="profile_theme_label">المظهر</string>
+    <string name="profile_edit_title">تعديل الملف الشخصي</string>
+    <string name="profile_username_label">اسم المستخدم (@)</string>
+    <string name="profile_display_name_label">الاسم المعروض</string>
+    <string name="profile_bio_label">النبذة التعريفية</string>
+    <string name="action_save">حفظ</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_retry">إعادة المحاولة</string>
+    <string name="action_delete">حذف</string>
+    <string name="cd_back">رجوع</string>
+
+    <!-- Phone Installation, Home Shortcuts & Saving Video -->
+    <string name="shortcut_feed_short">الرئيسية</string>
+    <string name="shortcut_feed_long">تصفح فيديوهات VIBO</string>
+    <string name="shortcut_upload_short">نشر سريع</string>
+    <string name="shortcut_upload_long">نشر فيديو على VIBO</string>
+    <string name="shortcut_discover_short">اكتشف</string>
+    <string name="shortcut_discover_long">اكتشف الرائج على VIBO</string>
+    <string name="profile_install_section_title">التثبيت على شاشة الهاتف</string>
+    <string name="profile_install_section_subtitle">أضف اختصار VIBO مباشرة إلى الشاشة الرئيسية لهاتفك للوصول السريع، أو شارك التطبيق مع أصدقائك.</string>
+    <string name="profile_pin_home_button">تثبيت أيقونة VIBO على الشاشة الرئيسية</string>
+    <string name="profile_pin_upload_button">إضافة اختصار النشر السريع</string>
+    <string name="profile_share_app_button">مشاركة VIBO</string>
+    <string name="pin_shortcut_requested">تم إرسال طلب التثبيت إلى الشاشة الرئيسية لهاتفك</string>
+    <string name="pin_shortcut_unsupported">مشغّل الهاتف لا يدعم تثبيت الاختصارات التلقائي؛ التطبيق متاح في قائمة التطبيقات</string>
+    <string name="pin_shortcut_error">تعذر تثبيت الاختصار على الشاشة الرئيسية</string>
+    <string name="share_app_text">جرّب تطبيق VIBO لمشاركة الفيديوهات القصيرة العربية!</string>
+    <string name="share_app_chooser">مشاركة تطبيق VIBO</string>
+    <string name="cd_save_to_phone">حفظ الفيديو على الهاتف</string>
+    <string name="save_video_label">حفظ</string>
+    <string name="saving_video_label">جاري الحفظ</string>
+    <string name="save_video_success">تم حفظ الفيديو على الهاتف في %1$s</string>
+    <string name="save_video_error">تعذر حفظ الفيديو على الهاتف</string>
+</resources>

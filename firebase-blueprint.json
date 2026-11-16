@@ -1,0 +1,187 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public creator profile in VIBO (excludes PII).",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the user." },
+        "username": { "type": "string", "description": "Unique handle without @ prefix." },
+        "displayName": { "type": "string", "description": "Display name shown on profile and videos." },
+        "bio": { "type": "string", "description": "Short biography text." },
+        "avatarUrl": { "type": "string", "description": "Profile avatar URL." },
+        "followersCount": { "type": "integer", "description": "Number of followers." },
+        "followingCount": { "type": "integer", "description": "Number of accounts followed." },
+        "likesCount": { "type": "integer", "description": "Total likes received across videos." },
+        "videosCount": { "type": "integer", "description": "Total published videos." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp via FieldValue.serverTimestamp()." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp via FieldValue.serverTimestamp()." }
+      },
+      "required": [
+        "userId",
+        "username",
+        "displayName",
+        "followersCount",
+        "followingCount",
+        "likesCount",
+        "videosCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LikedVideoRef": {
+      "title": "LikedVideoRef",
+      "description": "Reference to a video liked by the user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "videoId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "videoId", "createdAt"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Short-form video item in VIBO.",
+      "type": "object",
+      "properties": {
+        "creatorId": { "type": "string" },
+        "creatorUsername": { "type": "string" },
+        "creatorDisplayName": { "type": "string" },
+        "creatorAvatarUrl": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "hashtags": { "type": "array" },
+        "videoUri": { "type": "string" },
+        "thumbnailUri": { "type": "string" },
+        "durationMs": { "type": "integer" },
+        "visibility": { "type": "string", "enum": ["public", "private"] },
+        "likesCount": { "type": "integer" },
+        "commentsCount": { "type": "integer" },
+        "sharesCount": { "type": "integer" },
+        "viewsCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "creatorId",
+        "creatorUsername",
+        "creatorDisplayName",
+        "title",
+        "category",
+        "hashtags",
+        "videoUri",
+        "durationMs",
+        "visibility",
+        "likesCount",
+        "commentsCount",
+        "sharesCount",
+        "viewsCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VideoLike": {
+      "title": "VideoLike",
+      "description": "Per-user like marker on a video.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "videoId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "videoId", "createdAt"]
+    },
+    "VideoComment": {
+      "title": "VideoComment",
+      "description": "User comment on a video.",
+      "type": "object",
+      "properties": {
+        "videoId": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorUsername": { "type": "string" },
+        "authorDisplayName": { "type": "string" },
+        "authorAvatarUrl": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "videoId",
+        "authorId",
+        "authorUsername",
+        "authorDisplayName",
+        "text",
+        "createdAt"
+      ]
+    },
+    "Follow": {
+      "title": "Follow",
+      "description": "Follow edge between two VIBO users.",
+      "type": "object",
+      "properties": {
+        "followerId": { "type": "string" },
+        "followingId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["followerId", "followingId", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app notification for likes, comments, and follows.",
+      "type": "object",
+      "properties": {
+        "recipientId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderUsername": { "type": "string" },
+        "senderDisplayName": { "type": "string" },
+        "senderAvatarUrl": { "type": "string" },
+        "type": { "type": "string", "enum": ["like", "comment", "follow"] },
+        "videoId": { "type": "string" },
+        "message": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "recipientId",
+        "senderId",
+        "senderUsername",
+        "senderDisplayName",
+        "type",
+        "message",
+        "isRead",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Public creator profiles indexed by UID."
+    },
+    "/users/{userId}/liked_videos/{videoId}": {
+      "schema": { "$ref": "#/entities/LikedVideoRef" },
+      "description": "Videos liked by the owning user."
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/Video" },
+      "description": "Short videos feed and discovery catalog."
+    },
+    "/videos/{videoId}/likes/{userId}": {
+      "schema": { "$ref": "#/entities/VideoLike" },
+      "description": "Like records per video and user."
+    },
+    "/videos/{videoId}/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/VideoComment" },
+      "description": "Comments on a video."
+    },
+    "/follows/{followId}": {
+      "schema": { "$ref": "#/entities/Follow" },
+      "description": "Follower to following relationship edges."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "In-app notifications per recipient."
+    }
+  }
+}

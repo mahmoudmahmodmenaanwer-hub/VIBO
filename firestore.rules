@@ -1,0 +1,321 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Helpers ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- Validation Helpers ---
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.username is string && data.username.size() >= 2 && data.username.size() <= 30 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
+             (!('bio' in data) || data.bio == null || (data.bio is string && data.bio.size() <= 200)) &&
+             (!('avatarUrl' in data) || data.avatarUrl == null || (data.avatarUrl is string && data.avatarUrl.size() <= 500)) &&
+             data.followersCount is int && data.followersCount >= 0 &&
+             data.followingCount is int && data.followingCount >= 0 &&
+             data.likesCount is int && data.likesCount >= 0 &&
+             data.videosCount is int && data.videosCount >= 0;
+    }
+
+    function isValidLikedVideo(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.videoId is string && data.videoId.size() >= 1 && data.videoId.size() <= 128;
+    }
+
+    function isValidVideo(data) {
+      return data.creatorId is string && data.creatorId.size() >= 1 && data.creatorId.size() <= 128 &&
+             data.creatorUsername is string && data.creatorUsername.size() >= 1 && data.creatorUsername.size() <= 40 &&
+             data.creatorDisplayName is string && data.creatorDisplayName.size() >= 1 && data.creatorDisplayName.size() <= 60 &&
+             (!('creatorAvatarUrl' in data) || data.creatorAvatarUrl == null || (data.creatorAvatarUrl is string && data.creatorAvatarUrl.size() <= 500)) &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             (!('description' in data) || data.description == null || (data.description is string && data.description.size() <= 500)) &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 40 &&
+             data.hashtags is list && data.hashtags.size() <= 10 &&
+             (data.hashtags.size() == 0 || (data.hashtags[0] is string && data.hashtags[0].size() <= 40)) &&
+             data.videoUri is string && data.videoUri.size() >= 1 && data.videoUri.size() <= 2000 &&
+             (!('thumbnailUri' in data) || data.thumbnailUri == null || (data.thumbnailUri is string && data.thumbnailUri.size() <= 2000)) &&
+             data.durationMs is int && data.durationMs >= 0 &&
+             data.visibility in ['public', 'private'] &&
+             data.likesCount is int && data.likesCount >= 0 &&
+             data.commentsCount is int && data.commentsCount >= 0 &&
+             data.sharesCount is int && data.sharesCount >= 0 &&
+             data.viewsCount is int && data.viewsCount >= 0;
+    }
+
+    function isValidVideoLike(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.videoId is string && data.videoId.size() >= 1 && data.videoId.size() <= 128;
+    }
+
+    function isValidComment(data) {
+      return data.videoId is string && data.videoId.size() >= 1 && data.videoId.size() <= 128 &&
+             data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 &&
+             data.authorUsername is string && data.authorUsername.size() >= 1 && data.authorUsername.size() <= 40 &&
+             data.authorDisplayName is string && data.authorDisplayName.size() >= 1 && data.authorDisplayName.size() <= 60 &&
+             (!('authorAvatarUrl' in data) || data.authorAvatarUrl == null || (data.authorAvatarUrl is string && data.authorAvatarUrl.size() <= 500)) &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 500;
+    }
+
+    function isValidFollow(data) {
+      return data.followerId is string && data.followerId.size() >= 1 && data.followerId.size() <= 128 &&
+             data.followingId is string && data.followingId.size() >= 1 && data.followingId.size() <= 128;
+    }
+
+    function isValidNotification(data) {
+      return data.recipientId is string && data.recipientId.size() >= 1 && data.recipientId.size() <= 128 &&
+             data.senderId is string && data.senderId.size() >= 1 && data.senderId.size() <= 128 &&
+             data.senderUsername is string && data.senderUsername.size() >= 1 && data.senderUsername.size() <= 40 &&
+             data.senderDisplayName is string && data.senderDisplayName.size() >= 1 && data.senderDisplayName.size() <= 60 &&
+             (!('senderAvatarUrl' in data) || data.senderAvatarUrl == null || (data.senderAvatarUrl is string && data.senderAvatarUrl.size() <= 500)) &&
+             data.type in ['like', 'comment', 'follow'] &&
+             (!('videoId' in data) || data.videoId == null || (data.videoId is string && data.videoId.size() <= 128)) &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 200 &&
+             data.isRead is bool;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if isSignedIn() && existing().userId is string;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == userId &&
+                       incoming().keys().hasAll(['userId', 'username', 'displayName', 'followersCount', 'followingCount', 'likesCount', 'videosCount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'username', 'displayName', 'bio', 'avatarUrl', 'followersCount', 'followingCount', 'likesCount', 'videosCount', 'createdAt', 'updatedAt']) &&
+                       incoming().followersCount == 0 &&
+                       incoming().followingCount == 0 &&
+                       incoming().likesCount == 0 &&
+                       incoming().videosCount == 0 &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time;
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time && (
+                         // Action 1: Owner updates their profile or own counters
+                         (isOwner(userId) &&
+                          incoming().diff(existing()).affectedKeys().hasOnly(['username', 'displayName', 'bio', 'avatarUrl', 'followingCount', 'videosCount', 'updatedAt'])) ||
+                         // Action 2: Another user follows/unfollows this user (atomic with /follows doc)
+                         (request.auth.uid != userId &&
+                          incoming().diff(existing()).affectedKeys().hasOnly(['followersCount', 'updatedAt']) &&
+                          ((incoming().followersCount == existing().followersCount + 1 &&
+                            existsAfter(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId))) ||
+                           (existing().followersCount > 0 &&
+                            incoming().followersCount == existing().followersCount - 1 &&
+                            !existsAfter(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId))))) ||
+                         // Action 3: Like counter increment/decrement when a video is liked/unliked
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+                          (incoming().likesCount == existing().likesCount + 1 ||
+                           (existing().likesCount > 0 && incoming().likesCount == existing().likesCount - 1)))
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /liked_videos/{videoId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(videoId) &&
+                         isValidLikedVideo(incoming()) &&
+                         incoming().userId == userId &&
+                         incoming().videoId == videoId &&
+                         incoming().keys().hasAll(['userId', 'videoId', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'videoId', 'createdAt']) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time;
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(videoId);
+      }
+    }
+
+    match /videos/{videoId} {
+      allow get: if isSignedIn() &&
+                    isValidId(videoId) &&
+                    (existing().visibility == 'public' || existing().creatorId == request.auth.uid);
+
+      allow list: if isSignedIn() &&
+                     (existing().visibility == 'public' || existing().creatorId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+                       isValidId(videoId) &&
+                       isValidVideo(incoming()) &&
+                       incoming().creatorId == request.auth.uid &&
+                       incoming().keys().hasAll(['creatorId', 'creatorUsername', 'creatorDisplayName', 'title', 'category', 'hashtags', 'videoUri', 'durationMs', 'visibility', 'likesCount', 'commentsCount', 'sharesCount', 'viewsCount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['creatorId', 'creatorUsername', 'creatorDisplayName', 'creatorAvatarUrl', 'title', 'description', 'category', 'hashtags', 'videoUri', 'thumbnailUri', 'durationMs', 'visibility', 'likesCount', 'commentsCount', 'sharesCount', 'viewsCount', 'createdAt', 'updatedAt']) &&
+                       incoming().likesCount == 0 &&
+                       incoming().commentsCount == 0 &&
+                       incoming().sharesCount == 0 &&
+                       incoming().viewsCount == 0 &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time;
+
+      allow update: if isSignedIn() &&
+                       isValidId(videoId) &&
+                       isValidVideo(incoming()) &&
+                       incoming().creatorId == existing().creatorId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time && (
+                         // Action 1: Creator edits metadata
+                         (existing().creatorId == request.auth.uid &&
+                          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'category', 'hashtags', 'visibility', 'updatedAt'])) ||
+                         // Action 2: Like / Unlike counter (atomic with /videos/{videoId}/likes/{uid})
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+                          ((incoming().likesCount == existing().likesCount + 1 &&
+                            existsAfter(/databases/$(database)/documents/videos/$(videoId)/likes/$(request.auth.uid))) ||
+                           (existing().likesCount > 0 &&
+                            incoming().likesCount == existing().likesCount - 1 &&
+                            !existsAfter(/databases/$(database)/documents/videos/$(videoId)/likes/$(request.auth.uid))))) ||
+                         // Action 3: Comment counter
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['commentsCount', 'updatedAt']) &&
+                          (incoming().commentsCount == existing().commentsCount + 1 ||
+                           (existing().commentsCount > 0 && incoming().commentsCount == existing().commentsCount - 1))) ||
+                         // Action 4: Share counter
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['sharesCount', 'updatedAt']) &&
+                          incoming().sharesCount == existing().sharesCount + 1) ||
+                         // Action 5: View counter
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['viewsCount', 'updatedAt']) &&
+                          incoming().viewsCount == existing().viewsCount + 1)
+                       );
+
+      allow delete: if isSignedIn() &&
+                       isValidId(videoId) &&
+                       existing().creatorId == request.auth.uid;
+
+      match /likes/{userId} {
+        allow get: if isSignedIn() && isValidId(videoId) && isValidId(userId);
+        allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+                         isValidId(videoId) &&
+                         isValidVideoLike(incoming()) &&
+                         incoming().userId == userId &&
+                         incoming().videoId == videoId &&
+                         incoming().keys().hasAll(['userId', 'videoId', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'videoId', 'createdAt']) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         exists(/databases/$(database)/documents/videos/$(videoId));
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(videoId);
+      }
+
+      match /comments/{commentId} {
+        allow get: if isSignedIn() && isValidId(videoId) && isValidId(commentId);
+        allow list: if isSignedIn() && existing().videoId == videoId;
+
+        allow create: if isSignedIn() &&
+                         isValidId(videoId) &&
+                         isValidId(commentId) &&
+                         isValidComment(incoming()) &&
+                         incoming().authorId == request.auth.uid &&
+                         incoming().videoId == videoId &&
+                         incoming().keys().hasAll(['videoId', 'authorId', 'authorUsername', 'authorDisplayName', 'text', 'createdAt']) &&
+                         incoming().keys().hasOnly(['videoId', 'authorId', 'authorUsername', 'authorDisplayName', 'authorAvatarUrl', 'text', 'createdAt']) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         exists(/databases/$(database)/documents/videos/$(videoId));
+
+        allow update: if false;
+        allow delete: if isSignedIn() &&
+                         isValidId(videoId) &&
+                         isValidId(commentId) &&
+                         existing().authorId == request.auth.uid;
+      }
+    }
+
+    match /follows/{followId} {
+      allow get: if isSignedIn() && isValidId(followId);
+      allow list: if isSignedIn() &&
+                     (existing().followerId == request.auth.uid || existing().followingId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+                       isValidId(followId) &&
+                       isValidFollow(incoming()) &&
+                       incoming().followerId == request.auth.uid &&
+                       incoming().followingId != request.auth.uid &&
+                       followId == request.auth.uid + '_' + incoming().followingId &&
+                       incoming().keys().hasAll(['followerId', 'followingId', 'createdAt']) &&
+                       incoming().keys().hasOnly(['followerId', 'followingId', 'createdAt']) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       exists(/databases/$(database)/documents/users/$(incoming().followingId));
+
+      allow update: if false;
+      allow delete: if isSignedIn() &&
+                       isValidId(followId) &&
+                       existing().followerId == request.auth.uid;
+    }
+
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() &&
+                    isValidId(notificationId) &&
+                    existing().recipientId == request.auth.uid;
+
+      allow list: if isSignedIn() &&
+                     existing().recipientId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(notificationId) &&
+                       isValidNotification(incoming()) &&
+                       incoming().senderId == request.auth.uid &&
+                       incoming().recipientId != request.auth.uid &&
+                       incoming().isRead == false &&
+                       incoming().keys().hasAll(['recipientId', 'senderId', 'senderUsername', 'senderDisplayName', 'type', 'message', 'isRead', 'createdAt']) &&
+                       incoming().keys().hasOnly(['recipientId', 'senderId', 'senderUsername', 'senderDisplayName', 'senderAvatarUrl', 'type', 'videoId', 'message', 'isRead', 'createdAt']) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time;
+
+      allow update: if isSignedIn() &&
+                       isValidId(notificationId) &&
+                       isValidNotification(incoming()) &&
+                       existing().recipientId == request.auth.uid &&
+                       incoming().recipientId == existing().recipientId &&
+                       incoming().senderId == existing().senderId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['isRead']);
+
+      allow delete: if isSignedIn() &&
+                       isValidId(notificationId) &&
+                       existing().recipientId == request.auth.uid;
+    }
+  }
+}
